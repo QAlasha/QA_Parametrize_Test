@@ -10,6 +10,7 @@ def web_desktop(request):
 
 @pytest.fixture(params=[(600, 300), (300, 400)])
 def web_mobile(request):
+    browser.open('')
     browser.driver.set_window_size(request.param[0], request.param[1])
 
 
