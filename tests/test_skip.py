@@ -9,7 +9,6 @@ size_windows_1 = [(1980, 1080,),
                   (414, 896,)]
 
 
-
 @pytest.fixture(params=size_windows_1)
 def size_windows(request):
     browser.open('')
@@ -32,4 +31,3 @@ def test_mobile(size_windows):
         browser.element("a[href^='/login']").click()
         browser.element("input[name='login']").send_keys('lasha@mail.ru')
         pytest.skip(reason='skip mobile')
-
