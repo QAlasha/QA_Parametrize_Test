@@ -1,27 +1,26 @@
-from selene import browser, have
 import pytest
+from selenium import webdriver
+from selene import browser
 
 
-@pytest.fixture(scope="function")
-def size_browser(request):
-    resolutions = {
-        "desktop": (1920, 1080),
-        "mobile": (428, 300)
-    }
-    return resolutions[request.param]
+@pytest.fixture(params=[(1920, 1080), (1600, 1200), (320, 240), (480, 360)])
+def web_browser(request):
+    chrome_options = webdriver.ChromeOptions()
+    browser.config.driver_options = chrome_options
+    browser.config.window_height = request.param[0]
+    browser.config.window_width = request.param[1]
+    yield browser
+    browser.quit()
 
 
-@pytest.mark.parametrize('size_browser', ['desktop'], indirect=True)
-def test_desktop(size_browser):
-    browser.driver.set_window_size(size_browser[0], size_browser[1])
-    browser.element('a[href$="/login"]').click()
-    browser.element('#login div h1').should(have.text('Sign in to GitHub'))
-    browser.element('#login_field').click().send_keys('lasha.bas@mail.ru')
+@pytest.mark.parametrize('web_browser', [(1920, 1080), (1600, 1200)], indirect=True)
+def test_github_desktop(web_browser):
+    browser.open('https://github.com/')
+    browser.element('a.HeaderMenu-link--sign-in').click()
 
 
-@pytest.mark.parametrize('size_browser', ['mobile'], indirect=True)
-def test_mobile(size_browser):
-    browser.driver.set_window_size(size_browser[0], size_browser[1])
-    browser.element('button .Button-label').click()
-    browser.element("a[href^='/login']").click()
-    browser.element("input[name='login']").send_keys('lasha@mail.ru')
+@pytest.mark.parametrize('web_browser', [(320, 420), (480, 360)], indirect=True)
+def test_github_mobile(web_browser):
+    browser.open('https://github.com/')
+    browser.element('.flex-column [aria-label="Toggle navigation"]').click()
+    browser.element('a.HeaderMenu-link--sign-in').click()

@@ -1,33 +1,33 @@
 import pytest
-from selene import browser, have
-
-size_windows_1 = [(1980, 1080,),
-                  (1600, 1200,),
-                  (1280, 960,),
-                  (428, 900,),
-                  (372, 812,),
-                  (414, 896,)]
+from selenium import webdriver
+from selene import browser
 
 
-@pytest.fixture(params=size_windows_1)
-def size_windows(request):
-    browser.open('')
-    return request.param
+@pytest.fixture(params=[(1920, 1080), (320, 240), (1600, 1200), (480, 360)],
+                ids=['desktop', 'mobile', 'desktop', 'mobile'])
+def web_browser(request):
+    chrome_options = webdriver.ChromeOptions()
+    browser.config.driver_options = chrome_options
+    browser.config.window_height = request.param[0]
+    browser.config.window_width = request.param[1]
+
+    if 'desktop' in request.node.name and 'mobile' in request.node.callspec.id:
+        pytest.skip('Для теста не подходит мобильное соотношение сторон')
+    elif 'mobile' in request.node.name and 'desktop' in request.node.callspec.id:
+        pytest.skip('Для теста не подходит десктопное соотношение сторон')
+
+    yield browser
+    browser.quit()
 
 
-def test_desktop(size_windows):
-    browser.driver.set_window_size(size_windows[0], size_windows[1])
-    if size_windows[0] > 900:
-        browser.element('a[href$="/login"]').click()
-        browser.element('#login div h1').should(have.text('Sign in to GitHub'))
-        browser.element('#login_field').click().send_keys('lasha.bas@mail.ru')
-        pytest.skip(reason='Skip mobile')
+@pytest.mark.desktop
+def test_github_desktop(web_browser):
+    browser.open('https://github.com/')
+    browser.element('a.HeaderMenu-link--sign-in').click()
 
 
-def test_mobile(size_windows):
-    browser.driver.set_window_size(size_windows[0], size_windows[1])
-    if size_windows[0] < 900:
-        browser.element('button .Button-label').click()
-        browser.element("a[href^='/login']").click()
-        browser.element("input[name='login']").send_keys('lasha@mail.ru')
-        pytest.skip(reason='skip mobile')
+@pytest.mark.mobile
+def test_github_mobile(web_browser):
+    browser.open('https://github.com/')
+    browser.element('.flex-column [aria-label="Toggle navigation"]').click()
+    browser.element('a.HeaderMenu-link--sign-in').click()

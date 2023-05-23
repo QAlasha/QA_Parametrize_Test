@@ -1,26 +1,35 @@
 import pytest
-from selene import browser, have
+from selenium import webdriver
+from selene import browser
 
 
-@pytest.fixture(params=[(1020, 1080), (1080, 1020)])
-def web_desktop(request):
-    browser.open('')
-    browser.driver.set_window_size(request.param[0], request.param[1])
+
+@pytest.fixture(params=[(1920, 1080), (1600, 1200)])
+def web_browser_for_github_desktop(request):
+    chrome_options = webdriver.ChromeOptions()
+    browser.config.driver_options = chrome_options
+    browser.config.window_height = request.param[0]
+    browser.config.window_width = request.param[1]
+    yield browser
+    browser.quit()
 
 
-@pytest.fixture(params=[(600, 300), (300, 400)])
-def web_mobile(request):
-    browser.open('')
-    browser.driver.set_window_size(request.param[0], request.param[1])
+@pytest.fixture(params=[(320, 240), (480, 360)])
+def web_browser_for_github_mobile(request):
+    chrome_options = webdriver.ChromeOptions()
+    browser.config.driver_options = chrome_options
+    browser.config.window_height = request.param[0]
+    browser.config.window_width = request.param[1]
+    yield browser
+    browser.quit()
 
 
-def test_desktop(web_desktop):
-    browser.element('a[href$="/login"]').click()
-    browser.element('#login div h1').should(have.text('Sign in to GitHub'))
-    browser.element('#login_field').click().send_keys('lasha.bas@mail.ru')
+def test_github_desktop(web_browser_for_desktop):
+    browser.open('https://github.com/')
+    browser.element('a.HeaderMenu-link--sign-in').click()
 
 
-def test_mobile(web_mobile):
-    browser.element('button .Button-label').click()
-    browser.element("a[href^='/login']").click()
-    browser.element("input[name='login']").send_keys('lasha@mail.ru')
+def test_github_mobile(web_browser_for_mobile):
+    browser.open('https://github.com/')
+    browser.element('.flex-column [aria-label="Toggle navigation"]').click()
+    browser.element('a.HeaderMenu-link--sign-in').click()
