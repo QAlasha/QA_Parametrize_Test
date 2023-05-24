@@ -5,7 +5,7 @@ from selene import browser
 
 
 @pytest.fixture(params=[(1920, 1080), (1600, 1200)])
-def web_browser_for_github_desktop(request):
+def web_browser_for_desktop(request):
     chrome_options = webdriver.ChromeOptions()
     browser.config.driver_options = chrome_options
     browser.config.window_height = request.param[0]
@@ -15,7 +15,7 @@ def web_browser_for_github_desktop(request):
 
 
 @pytest.fixture(params=[(320, 240), (480, 360)])
-def web_browser_for_github_mobile(request):
+def web_browser_for_mobile(request):
     chrome_options = webdriver.ChromeOptions()
     browser.config.driver_options = chrome_options
     browser.config.window_height = request.param[0]
